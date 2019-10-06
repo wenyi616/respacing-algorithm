@@ -35,46 +35,37 @@ def fill_cell(T, i, j, string, is_word):
     if (i==0 and j!=0):
         value = False
         index = None
-#        print("Fill (%d,%d) with %r " % (i,j,value) + str(index))
         return RespaceTableCell(value, index)     
    
     if (i!=0 and j==0):
         value = True
         index = 0
-#        print("Fill (%d,%d) with %r " % (i,j,value) + str(index))
         return RespaceTableCell(value, index)    
     
-    # deal with copy  
+    # copy from up
     cell = T.get(i-1,j)  
     if (cell.value == True):   
-#        print("copycopy from up")
         value = True
         index = cell.index
-#        print("Fill (%d,%d) with %r " % (i,j,value) + str(index))
         return RespaceTableCell(True, cell.index)
  
 
-#    print("examine substring")
     substring = string[i-1:j]
-#    print(substring)
     
     if (substring == ""):
         value = False
         index = None
-#        print("Fill (%d,%d) with %r " % (i,j,value) + str(index))
         return RespaceTableCell(value, index)       
     
     cell = T.get(i,j-len(substring))
-#    print("if word? %r" % is_word(substring))
-#    print("if prev-cell? %r" % cell.value)
     
     value = (cell.value and is_word(substring))
     if value:
         index = j
+
     else: 
         index = None
-
-#    print("Fill (%d,%d) with %r " % (i,j,value) + str(index))
+    
     return RespaceTableCell(value, index)
                   
 # Inputs: N, the size of the list being respaced
@@ -102,39 +93,47 @@ def cell_ordering(N):
 # (See instructions.pdf for more on the dynamic programming skeleton)
 # Return the respaced string, or None if there is no respacing.
 def respace_from_table(s, table):
+    n = len(s)
+
+    # print the dynamic table
+    
+#    for i in range(len(s)+1):
+#        for j in range (len(s)+1):
+#            print(table.get(i,j).value),
+#        print("")
+
     
     # start from bottom right corner
     new_string = ""
     result_j = []
     
-    n = len(s) # in the simple case, n=5
     row = n
-    col = n  
+    col = n 
     
-    while (col > 0):        
+    cell = table.get(row,col)
+    
+    # negative cases
+    if (cell.value == False):
+        print("not exist")
+        return None 
+    
+    
+    while (col > 0):          
         cell = table.get(row,col)
         
+        # go up till seeing first False
         while (cell.value == True):
             row = row - 1
             cell = table.get(row,col)
-#            print(row,col,cell.value)
         
-#        print("saw first false, jump out, and go left")
-
         row = row + 1
         result_j.insert(0,col)
-        col = col - 1
-#        print(row,col,cell.value)  
         
-        while (cell.value == False):
-            col = col - 1
-            cell = table.get(row,col)
-#            print(row,col,cell.value)
+        col = row - 1
         
-        row = row - 1       
-#        print("saw first true, jump out, and go up")
 
-    print("current j = 0")
+
+    print("done backtrace")
     print(result_j)
 
     # add space
@@ -143,18 +142,37 @@ def respace_from_table(s, table):
         new_string = new_string + s[curr:c] + " "
         curr = c
     
-#    print("done backtrace")
     return (new_string.strip())
 
 
+
+
 if __name__ == "__main__":
-    # Example usage.
+
     from dynamic_programming import DynamicProgramTable
-#    s = "itwas"
+
     s = "itwasthebestoftimes"
-    
-    
     wordlist = ["of", "it", "the", "best", "times", "was"]
+
+    # generated_positive_123
+    # sides skins cop town rid;'
+#    s = "sidesskinscoptownrid"
+#    wordlist = ["town","rid","skins","ski","rage","cop","sake","sides","acres","naval"]
+    
+    # proof a away a proof
+#    s = "proofaawayaproof"
+#    wordlist = ['maybe', 'norm', 'prix', 'honda', 'a', 'proof', 'derek', 'palm', 'away', 'great']
+
+
+    # crown wine wine win sand    
+#    s = "crownwinewinewinsand"
+#    wordlist = ['crown', 'sand', 'univ', 'amino', 'wins', 'light', 'usa', 'wine', 'keys', 'win']
+    
+    # ---- do not exist ----
+#    s = "mallsitllkleiknleinnis"
+#    wordlist = ["fair","klein","still","endif","const","dear","aruba","mall","ins","solar"]
+    
+    
     D = DynamicProgramTable(len(s) + 1, len(s) + 1, cell_ordering(len(s)), fill_cell)
     D.fill(string=s, is_word=lambda w:w in wordlist)
     print respace_from_table(s, D)
